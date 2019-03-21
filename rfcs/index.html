@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en" class="RFC">
+<head>
+<meta charset="utf-8">
+<meta name="scripts" content="Common,Latin">
+<title>RFC 1912839: Compiler Driven Development</title>
+<meta name="author" content="Samuel Marks">
+<meta name="generator" content="xml2rfc 2.21.1">
+<meta name="keyword" content="compilers">
+<link rel="alternate" type="application/rfc+xml" href="index.xml">
+<link rel="license" href="#copyright">
+<style type="text/css">/* fonts */
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans'); /* Sans-serif */
+@import url('https://fonts.googleapis.com/css?family=Noto+Serif'); /* Serif (print) */
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono'); /* Monospace */
+
+@viewport {
+  zoom: 1.0;
+  width: extend-to-zoom;
+}
+@-ms-viewport {
+  width: extend-to-zoom;
+  zoom: 1.0;
+}
+/* general and mobile first */
+html {
+}
+body {
+  max-width: 90%;
+  margin: 1.5em auto;
+  color: #222;
+  background-color: #fff;
+  font-size: 14px;
+  font-family: 'Noto Sans', Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+}
+.ears {
+  display: none;
+}
+
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  margin: 1em 0 0.5em;
+  font-weight: bold;
+  line-height: 1.3;
+}
+#title {
+  clear: both;
+  border-bottom: 1px solid #ddd;
+  margin: 0 0 0.5em 0;
+  padding: 1em 0 0.5em;
+}
+.author {
+  padding-bottom: 4px;
+}
+h1 {
+  font-size: 26px;
+  margin: 1em 0;
+}
+h2 {
+  font-size: 22px;
+  margin-top: -20px;  /* provide offset for in-page anchors */
+  padding-top: 33px;
+}
+h3 {
+  font-size: 18px;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
+}
+h4 {
+  font-size: 16px;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
+}
+h5, h6 {
+  font-size: 14px;
+}
+#n-copyright-notice {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1em;
+  margin-bottom: 1em;
+}
+/* general structure */
+p {
+  padding: 0;
+  margin: 0 0 1em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+.alignCenter.art-text {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  z-index: 2;
+}
+a[href] {
+  color: #3E8EDE;
+}
+a[href]:hover {
+  background-color: #f2f2f2;
+}
+figcaption a[href],
+a[href].selfRef {
+  color: #222;
+}
+/* XXX probably not this:
+a.selfRef:hover {
+  background-color: transparent;
+  cursor: default;
+} */
+
+/* Figures */
+tt, code, pre, code {
+  background-color: #f9f9f9;
+  font-family: 'Roboto Mono', monospace;
+}
+pre {
+  border: 1px solid #eee;
+  margin: 0;
+  padding: 1em;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption {
+  font-style: italic;
+  margin: 0 0 1em 0;
+}
+@media screen {
+  pre {
+    overflow-x: auto;
+    max-width: 100%;
+    max-width: calc(100% - 22px);
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 1.2em 2em;
+}
+blockquote {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  border: 1px solid #eee;
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+th {
+  text-align: left;
+  background-color: #e9e9e9;
+}
+tr:nth-child(2n+1) > td {
+  background-color: #f5f5f5;
+}
+table caption {
+  font-style: italic;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  color: #777;
+  text-decoration: none;
+  visibility: hidden;
+  user-select: none;
+  -ms-user-select: none;
+  -o-user-select:none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+@media screen {
+  aside:hover > a.pilcrow,
+  p:hover > a.pilcrow,
+  blockquote:hover > a.pilcrow,
+  div:hover > a.pilcrow,
+  li:hover > a.pilcrow,
+  pre:hover > a.pilcrow {
+    visibility: visible;
+  }
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: 0.9em;
+}
+#identifiers dt {
+  width: 3em;
+  clear: left;
+}
+#identifiers dd {
+  float: left;
+  margin-bottom: 0;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc  {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+nav.toc ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+nav.toc li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 600px) {
+  .index ul {
+    -moz-column-count: 2;
+    -moz-column-gap: 20px;
+  }
+  .index ul ul {
+    -moz-column-count: 1;
+    -moz-column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  font-family: "Noto Sans",Arial,Helvetica,sans-serif;
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #b76427;
+  background-color: rgba(249, 232, 105, 0.3);
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: rgba(249, 232, 105, 0.3);
+  border-radius: 3px;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 1023px) {
+  body {
+    padding-top: 2em;
+  }
+  #title {
+    padding: 1em 0;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  h2 {
+    font-size: 20px;
+    margin-top: -18px;  /* provide offset for in-page anchors */
+    padding-top: 38px;
+  }
+  #identifiers dd {
+    max-width: 60%;
+  }
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    background-color: inherit;
+    border-bottom: 1px solid #ccc;
+  }
+  #toc h2 {
+    margin: -1px 0 0 0;
+    padding: 4px 0 4px 6px;
+    padding-right: 1em;
+    min-width: 190px;
+    font-size: 1.1em;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 6px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 1024px) {
+  body {
+    max-width: 724px;
+    margin: 42px auto;
+    padding-left: 1.5em;
+    padding-right: 29em;
+  }
+  #toc {
+    position: fixed;
+    top: 42px;
+    right: 42px;
+    width: 25%;
+    margin: 0;
+    padding: 0 1em;
+    z-index: 1;
+  }
+  #toc h2 {
+    border-top: none;
+    border-bottom: 1px solid #ddd;
+    font-size: 1em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 0;
+    overflow: auto;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+.ears thead .left {
+  string-set: ears-top-left content();
+}
+
+.ears thead .center {
+  string-set: ears-top-center content();
+}
+
+.ears thead .right {
+  string-set: ears-top-right content();
+}
+
+.ears tfoot .left {
+  string-set: ears-bottom-left content();
+}
+
+.ears tfoot .center {
+  string-set: ears-bottom-center content();
+}
+
+.ears tfoot .right {
+  string-set: ears-bottom-right content();
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+  @top-left {
+    content: 'Internet-Draft';
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-left {
+    content: string(ears-top-left);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-center {
+    content: string(ears-top-center);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-right {
+    content: string(ears-top-right);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @bottom-left {
+    content: string(ears-bottom-left);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-center {
+    content: string(ears-bottom-center);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-right {
+      content: '[Page ' counter(page) ']';
+      vertical-align: top;
+      border-top: solid 1px #ccc;
+  }
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Leave room in document info to show Internet-Draft on one line */
+#identifiers dt {
+  width: 8em;
+}
+
+/* Don't waste quite as much whitespace between label and value in doc info */
+#identifiers dd {
+  margin-left: 1em;
+}
+
+/* Give floating toc a background color (needed when it's a div inside section */
+#toc {
+  background-color: white;
+}
+
+/* Make the collapsed ToC header render white on gray also when it's a link */
+@media screen and (max-width: 1023px) {
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+}
+
+/* Give the bottom of the ToC some whitespace */
+@media screen and (min-width: 1024px) {
+  #toc {
+    padding: 0 0 1em 1em;
+  }
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* prevent monospace from becoming overly large */
+tt, code, pre, code {
+  font-size: 95%;
+}
+
+/* Fix the height/width aspect for ascii art*/
+.art-text pre {
+  line-height: 1.12;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin-right: 0.5em;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table td.text-left,
+table th.text-left {
+  text-align: left;
+}
+table td.text-center,
+table th.text-center {
+  text-align: center;
+}
+table td.text-right,
+table th.text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact informatio look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+caption a[href] {
+  color: #222;
+}
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Avoid wrapping of URLs in references */
+.references a {
+  white-space: nowrap;
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+</style>
+<link rel="stylesheet" href="rfc-local.css" type="text/css">
+<link href="https://dx.doi.org/10.17487/rfc1912839" rel="alternate">
+  <link href="urn:issn:2070-1721" rel="alternate">
+  </head>
+<body>
+<table class="ears">
+<thead><tr>
+<td class="left">RFC 1912839</td>
+<td class="center">CDD</td>
+<td class="right">March 2019</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Marks</td>
+<td class="center">Informational</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div class="document-information">
+<dl id="identifiers">
+<dt class="label-stream">Stream:</dt>
+<dd class="stream">Internet Engineering Task Force (IETF)</dd>
+<dt class="label-rfc">RFC:</dt>
+<dd class="rfc"><a href="https://www.rfc-editor.org/info/rfc1912839.txt" class="eref">1912839</a></dd>
+<dt class="label-category">Category:</dt>
+<dd class="category">Informational</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2019-03-21" class="published">21 March 2019</time>
+    </dd>
+<dt class="label-issn">ISSN:</dt>
+<dd class="issn">2070-1721</dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">S. Marks</div>
+<div class="org">Sydney Scientific</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Compiler Driven Development</h1>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        <a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        <a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <span><a href="https://www.rfc-editor.org/info/rfc1912839">https://www.rfc-editor.org/info/rfc1912839</a></span>.
+        <a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2019 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        <a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Simplified BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Simplified BSD License.
+        <a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-boilerplate.3">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.1">
+            <p id="section-boilerplate.3-1.1.1"><a href="#section-1" class="xref">1</a>.  <a href="#name-overview" class="xref">Overview</a><a href="#section-boilerplate.3-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.2">
+            <p id="section-boilerplate.3-1.2.1"><a href="#section-2" class="xref">2</a>.  <a href="#name-language-framework-and-desi" class="xref">Language, framework and design-pattern implementation</a><a href="#section-boilerplate.3-1.2.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.2.2.1">
+                <p id="section-boilerplate.3-1.2.2.1.1"><a href="#section-2.1" class="xref">2.1</a>.  <a href="#name-starter-scaffold" class="xref">Starter scaffold</a><a href="#section-boilerplate.3-1.2.2.1.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.2.2.1.2.1">
+                    <p id="section-boilerplate.3-1.2.2.1.2.1.1"><a href="#section-2.1.1" class="xref">2.1.1</a>.  <a href="#name-clear-modularisation" class="xref">Clear modularisation</a><a href="#section-boilerplate.3-1.2.2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc ulEmpty" id="section-boilerplate.3-1.2.2.2">
+                <p id="section-boilerplate.3-1.2.2.2.1"><a href="#section-2.2" class="xref">2.2</a>.  <a href="#name-compiler" class="xref">Compiler</a><a href="#section-boilerplate.3-1.2.2.2.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-boilerplate.3-1.2.2.2.2.1">
+                    <p id="section-boilerplate.3-1.2.2.2.2.1.1"><a href="#section-2.2.1" class="xref">2.2.1</a>.  <a href="#name-dynamic-code-generation" class="xref">Dynamic code-generation</a><a href="#section-boilerplate.3-1.2.2.2.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-boilerplate.3-1.2.2.2.2.2">
+                    <p id="section-boilerplate.3-1.2.2.2.2.2.1"><a href="#section-2.2.2" class="xref">2.2.2</a>.  <a href="#name-static-code-generation" class="xref">Static code-generation</a><a href="#section-boilerplate.3-1.2.2.2.2.2.1" class="pilcrow">¶</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-boilerplate.3-1.3">
+            <p id="section-boilerplate.3-1.3.1"><a href="#section-appendix.a" class="xref"></a>  <a href="#name-authors-address" class="xref">Author's Address</a><a href="#section-boilerplate.3-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="overview">
+<section id="section-1">
+      <h2 id="name-overview">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
+      </h2>
+<p id="section-1-1">Modern multi-client software-engineering impedes speedy, quality development as code duplication is required at every tier.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">Duplication catalyses short-cuts, trade-offs and inconsistencies in order to develop with sufficient agility.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">To use a web-app example: routes &amp; models of the backend are called from multiple frontends, each with their own Application Programming Interface (API) client, model abstraction, and views. Add in documentation and tests, and suddenly development speed plummets. Thus trade-offs between software-engineering quality and quicker delivery becomes standard.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">Our approach supersedes the crux of these trade-offs by: traversing the Abstract Syntax Trees (ASTs) in one language, then transforming and merging schemas across to the next language(s).<a href="#section-1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="language-framework-and-design-pattern-implementation">
+<section id="section-2">
+      <h2 id="name-language-framework-and-desi">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-language-framework-and-desi" class="section-name selfRef">Language, framework and design-pattern implementation</a>
+      </h2>
+<p id="section-2-1">To be compliant with compiler-driven development (CDD), one needs:<a href="#section-2-1" class="pilcrow">¶</a></p>
+<div id="starter-scaffold">
+<section id="section-2.1">
+        <h3 id="name-starter-scaffold">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-starter-scaffold" class="section-name selfRef">Starter scaffold</a>
+        </h3>
+<p id="section-2.1-1">The starter scaffold MUST have:<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<div id="clear-modularisation">
+<section id="section-2.1.1">
+          <h4 id="name-clear-modularisation">
+<a href="#section-2.1.1" class="section-number selfRef">2.1.1. </a><a href="#name-clear-modularisation" class="section-name selfRef">Clear modularisation</a>
+          </h4>
+<div id="backend-example">
+<section id="section-2.1.1.1">
+            <h5 id="name-backend-example">
+<a href="#section-2.1.1.1" class="section-number selfRef">2.1.1.1. </a><a href="#name-backend-example" class="section-name selfRef">Backend example:</a>
+            </h5>
+<div class="artwork art-text alignLeft" id="section-2.1.1.1-1">
+<pre>.
+|-- .dockerignore
+|-- .editorconfig
+|-- .gitignore
+|-- Dockerfile
+|-- README.md
+|-- api
+|   |-- auth
+|   |   |-- middleware.ts
+|   |   |-- models.d.ts
+|   |   |-- models.ts
+|   |   `-- routes.ts
+|   `-- user
+|       |-- admin.ts
+|       |-- models.ts
+|       |-- routes.ts
+|       |-- sdk.ts
+|       `-- utils.ts
+|-- config.ts
+|-- docker-compose.yml
+|-- main.ts
+|-- package-lock.json
+|-- package.json
+|-- swagger.yaml
+|-- test
+|   |-- SampleData.ts
+|   |-- api
+|   |   |-- auth
+|   |   |   |-- auth_test_sdk.ts
+|   |   |   |-- schema.json
+|   |   |   |-- test_auth_api.ts
+|   |   |   `-- users.json
+|   |   `-- user
+|   |       |-- schema.json
+|   |       |-- test_user_api.ts
+|   |       |-- user_mocks.ts
+|   |       `-- user_test_sdk.ts
+|   |-- share_interfaces.d.ts
+|   |-- shared_tests.js
+|   |-- shared_tests.ts
+|   `-- shared_types.d.ts
+|-- tsconfig.json
+`-- tslint.json
+</pre>
+<a href="#section-2.1.1.1-1" class="pilcrow">¶</a>
+</div>
+<p id="section-2.1.1.1-2">To explain this example in detail, at the root is:<a href="#section-2.1.1.1-2" class="pilcrow">¶</a></p>
+<div id="dockerfile-and-docker-compose-yml-so-that-the-solution-can-be-deployed-trivially-with-containers">
+<section id="section-2.1.1.1.1">
+              <h6 id="name-dockerfile-and-docker-compo">
+<a href="#section-2.1.1.1.1" class="section-number selfRef">2.1.1.1.1. </a><a href="#name-dockerfile-and-docker-compo" class="section-name selfRef"><code>Dockerfile</code> and <code>docker-compose.yml</code> so that the solution can be deployed trivially with containers</a>
+            </h6>
+</section>
+</div>
+<div id="ignore-files-dockerignore-gitignore">
+<section id="section-2.1.1.1.2">
+              <h6 id="name-ignore-files-dockerignore-g">
+<a href="#section-2.1.1.1.2" class="section-number selfRef">2.1.1.1.2. </a><a href="#name-ignore-files-dockerignore-g" class="section-name selfRef">ignore files (<code>.dockerignore</code>, <code>.gitignore</code>)</a>
+              </h6>
+<p id="section-2.1.1.1.2-1">To stop files &amp; folders from being seen where they shouldn't<a href="#section-2.1.1.1.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="editorconfig-tslint-json">
+<section id="section-2.1.1.1.3">
+              <h6 id="name-editorconfig-tslintjson">
+<a href="#section-2.1.1.1.3" class="section-number selfRef">2.1.1.1.3. </a><a href="#name-editorconfig-tslintjson" class="section-name selfRef"><code>.editorconfig</code>, <code>tslint.json</code></a>
+              </h6>
+<p id="section-2.1.1.1.3-1">Set editor defaults and linting<a href="#section-2.1.1.1.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="package-json-package-lock-json">
+<section id="section-2.1.1.1.4">
+              <h6 id="name-packagejson-package-lockjso">
+<a href="#section-2.1.1.1.4" class="section-number selfRef">2.1.1.1.4. </a><a href="#name-packagejson-package-lockjso" class="section-name selfRef"><code>package.json</code>, <code>package-lock.json</code></a>
+              </h6>
+<p id="section-2.1.1.1.4-1">Project name, version, dependencies &amp; license<a href="#section-2.1.1.1.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="api-directory-with-entity-subdirectories">
+<section id="section-2.1.1.1.5">
+              <h6 id="name-api-directory-with-entity-s">
+<a href="#section-2.1.1.1.5" class="section-number selfRef">2.1.1.1.5. </a><a href="#name-api-directory-with-entity-s" class="section-name selfRef"><code>api</code> directory with entity subdirectories</a>
+              </h6>
+<div id="entity-subdirectory">
+<section id="section-2.1.1.1.5.1">
+                <h6 id="name-entity-subdirectory">
+<a href="#section-2.1.1.1.5.1" class="section-number selfRef">2.1.1.1.5.1. </a><a href="#name-entity-subdirectory" class="section-name selfRef">Entity subdirectory</a>
+                </h6>
+<p id="section-2.1.1.1.5.1-1">Within the entity subsubdirectories are a number of files, each of which is described in detail below:<a href="#section-2.1.1.1.5.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="middleware-ts">
+<section id="section-2.1.1.1.5.2">
+                <h6 id="name-middlewarets">
+<a href="#section-2.1.1.1.5.2" class="section-number selfRef">2.1.1.1.5.2. </a><a href="#name-middlewarets" class="section-name selfRef"><code>middleware.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.5.2-1">Contains middleware functions for routes. Custom middleware functions can be added here. Sometimes a shared middleware function will be generated when 2 or more routes share common functionality (e.g.: Request Body must contain Entity0 and Entity1 where both have an equal shared ID).<a href="#section-2.1.1.1.5.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="models-d-ts">
+<section id="section-2.1.1.1.5.3">
+                <h6 id="name-modelsdts">
+<a href="#section-2.1.1.1.5.3" class="section-number selfRef">2.1.1.1.5.3. </a><a href="#name-modelsdts" class="section-name selfRef"><code>models.d.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.5.3-1">Contains <code>interface</code>s for Entities (models). Depending on the language, this isn't neccesary as the model <code>struct</code> itself can be used as the type internally.<a href="#section-2.1.1.1.5.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="models-ts">
+<section id="section-2.1.1.1.5.4">
+                <h6 id="name-modelsts">
+<a href="#section-2.1.1.1.5.4" class="section-number selfRef">2.1.1.1.5.4. </a><a href="#name-modelsts" class="section-name selfRef"><code>models.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.5.4-1">Contains the models. If relational, this will is where you would create primary and foreign keys, and other indices. Additionally this often has additional validation and a <code>toJSON</code> function, showing what needs to appear. In our TypeScript example scaffold, we use an <code>_omit: string[]</code> which is used to populate the output, e.g.: <code>_omit = ['password']</code> to exclude the <code>password</code> field from output.<a href="#section-2.1.1.1.5.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="routes-ts">
+<section id="section-2.1.1.1.5.5">
+                <h6 id="name-routests">
+<a href="#section-2.1.1.1.5.5" class="section-number selfRef">2.1.1.1.5.5. </a><a href="#name-routests" class="section-name selfRef"><code>routes.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.5.5-1">Contains route implementation. Includes endpoints and 'controllers'. Depending on the language, this allows for middleware, actors, decorators, requires parent <code>class</code>es &amp;etc.<a href="#section-2.1.1.1.5.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="utils-ts">
+<section id="section-2.1.1.1.5.6">
+                <h6 id="name-utilsts">
+<a href="#section-2.1.1.1.5.6" class="section-number selfRef">2.1.1.1.5.6. </a><a href="#name-utilsts" class="section-name selfRef"><code>utils.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.5.6-1">Contains small utility functions that are only needed by this Entity. E.g.: custom error messages.<a href="#section-2.1.1.1.5.6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sdk-ts">
+<section id="section-2.1.1.1.5.7">
+                <h6 id="name-sdkts">
+<a href="#section-2.1.1.1.5.7" class="section-number selfRef">2.1.1.1.5.7. </a><a href="#name-sdkts" class="section-name selfRef"><code>sdk.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.5.7-1">a) If the same route logic is required on multiple routes, then it's extracted into an SDK function.<a href="#section-2.1.1.1.5.7-1" class="pilcrow">¶</a></p>
+<p id="section-2.1.1.1.5.7-2">b) inlining of SDK: This will be on demand or if a sufficiently high optimisation level is given.<a href="#section-2.1.1.1.5.7-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="test-directory-with-api-subdirectory-and-entity-subsubdirectories">
+<section id="section-2.1.1.1.6">
+              <h6 id="name-test-directory-with-api-sub">
+<a href="#section-2.1.1.1.6" class="section-number selfRef">2.1.1.1.6. </a><a href="#name-test-directory-with-api-sub" class="section-name selfRef"><code>test</code> directory with <code>api</code> subdirectory and entity subsubdirectories</a>
+              </h6>
+<p id="section-2.1.1.1.6-1">These subsubdirectories<a href="#section-2.1.1.1.6-1" class="pilcrow">¶</a></p>
+<div id="schema-json">
+<section id="section-2.1.1.1.6.1">
+                <h6 id="name-schemajson">
+<a href="#section-2.1.1.1.6.1" class="section-number selfRef">2.1.1.1.6.1. </a><a href="#name-schemajson" class="section-name selfRef"><code>schema.json</code></a>
+                </h6>
+<p id="section-2.1.1.1.6.1-1">JSON-schema to be used by validation middleware, and any other area where JSON-schema can be read (e.g.: tests can use it directly to confirm that response body is in correct format, and route middleware can use it directly to confirm request body is in correct format).<a href="#section-2.1.1.1.6.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="test-user-api-ts">
+<section id="section-2.1.1.1.6.2">
+                <h6 id="name-test_user_apits">
+<a href="#section-2.1.1.1.6.2" class="section-number selfRef">2.1.1.1.6.2. </a><a href="#name-test_user_apits" class="section-name selfRef"><code>test_user_api.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.6.2-1">Calls the SDK and shows test lifecycle dependencies, like so:<a href="#section-2.1.1.1.6.2-1" class="pilcrow">¶</a></p>
+<div id="section-2.1.1.1.6.2-2">
+<pre class="sourcecode lang-typescript">describe('/api/auth', () =&gt; {
+    beforeEach(done =&gt; sdk.unregister_all(mocks, () =&gt; done()));
+    afterEach(done =&gt; sdk.unregister_all(mocks, () =&gt; done()));
+
+    it('POST should login user', done =&gt; sdk.register_login(mocks[1], done));
+});
+</pre>
+<a href="#section-2.1.1.1.6.2-2" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="user-mocks-ts">
+<section id="section-2.1.1.1.6.3">
+                <h6 id="name-user_mocksts">
+<a href="#section-2.1.1.1.6.3" class="section-number selfRef">2.1.1.1.6.3. </a><a href="#name-user_mocksts" class="section-name selfRef"><code>user_mocks.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.6.3-1">Contains the mocks for the entity in question, fake data with success and failure cases. JSON or a similar language-independent format is best here.<a href="#section-2.1.1.1.6.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="user-test-sdk-ts">
+<section id="section-2.1.1.1.6.4">
+                <h6 id="name-user_test_sdkts">
+<a href="#section-2.1.1.1.6.4" class="section-number selfRef">2.1.1.1.6.4. </a><a href="#name-user_test_sdkts" class="section-name selfRef"><code>user_test_sdk.ts</code></a>
+                </h6>
+<p id="section-2.1.1.1.6.4-1">Library SDK for use by Entity specific tests, as well as <code>import</code>ed and used by other dependent Entities.<a href="#section-2.1.1.1.6.4-1" class="pilcrow">¶</a></p>
+<p id="section-2.1.1.1.6.4-2">Example:<a href="#section-2.1.1.1.6.4-2" class="pilcrow">¶</a></p>
+<div id="section-2.1.1.1.6.4-3">
+<pre class="sourcecode lang-typescript">public unregister_all(users: User[], callback: TCallback&lt;Error | IncomingMessageError, Response&gt;) {
+    mapSeries(users as any, (user: User, callb) =&gt;
+        waterfall([
+                call_back =&gt; this.login(user, (err, res) =&gt;
+                    err == null ? call_back(void 0, res.header['x-access-token']) : call_back(err)
+                ),
+                (access_token, call_back) =&gt; this.user_sdk.unregister({ access_token }, (err, res) =&gt;
+                    call_back(err, access_token)
+                ),
+            ], callb
+        ), callback as any);
+}
+</pre>
+<a href="#section-2.1.1.1.6.4-3" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="compiler">
+<section id="section-2.2">
+        <h3 id="name-compiler">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-compiler" class="section-name selfRef">Compiler</a>
+        </h3>
+<div id="dynamic-code-generation">
+<section id="section-2.2.1">
+          <h4 id="name-dynamic-code-generation">
+<a href="#section-2.2.1" class="section-number selfRef">2.2.1. </a><a href="#name-dynamic-code-generation" class="section-name selfRef">Dynamic code-generation</a>
+        </h4>
+</section>
+</div>
+<div id="static-code-generation">
+<section id="section-2.2.2">
+          <h4 id="name-static-code-generation">
+<a href="#section-2.2.2" class="section-number selfRef">2.2.2. </a><a href="#name-static-code-generation" class="section-name selfRef">Static code-generation</a>
+          </h4>
+<p id="section-2.2.2-1">Traverse the Abstract Syntax Tree (AST) using same language as targetting.<a href="#section-2.2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2.2-2">Find the key areas of<a href="#section-2.2.2-2" class="pilcrow">¶</a></p>
+<div id="docstrings">
+<section id="section-2.2.2.1">
+            <h5 id="name-docstrings">
+<a href="#section-2.2.2.1" class="section-number selfRef">2.2.2.1. </a><a href="#name-docstrings" class="section-name selfRef">Docstrings</a>
+          </h5>
+</section>
+</div>
+<div id="tests">
+<section id="section-2.2.2.2">
+            <h5 id="name-tests">
+<a href="#section-2.2.2.2" class="section-number selfRef">2.2.2.2. </a><a href="#name-tests" class="section-name selfRef">Tests</a>
+            </h5>
+<p id="section-2.2.2.2-1">Implement <code>2.1.1.1.6.</code>.<a href="#section-2.2.2.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="models">
+<section id="section-2.2.2.3">
+            <h5 id="name-models">
+<a href="#section-2.2.2.3" class="section-number selfRef">2.2.2.3. </a><a href="#name-models" class="section-name selfRef">Models</a>
+          </h5>
+</section>
+</div>
+<div id="validation">
+<section id="section-2.2.2.4">
+            <h5 id="name-validation">
+<a href="#section-2.2.2.4" class="section-number selfRef">2.2.2.4. </a><a href="#name-validation" class="section-name selfRef">Validation</a>
+          </h5>
+</section>
+</div>
+<div id="routes">
+<section id="section-2.2.2.5">
+            <h5 id="name-routes">
+<a href="#section-2.2.2.5" class="section-number selfRef">2.2.2.5. </a><a href="#name-routes" class="section-name selfRef">Routes</a>
+          </h5>
+</section>
+</div>
+<div id="views">
+<section id="section-2.2.2.6">
+            <h5 id="name-views">
+<a href="#section-2.2.2.6" class="section-number selfRef">2.2.2.6. </a><a href="#name-views" class="section-name selfRef">Views</a>
+          </h5>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="section-appendix.a">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Samuel Marks</span></div>
+<div dir="auto" class="left"><span class="org">Sydney Scientific</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:samuel@offscale.io" class="email">samuel@offscale.io</a>
+</div>
+</address>
+</section>
+</div>
+<script>var toc = document.getElementById("toc");
+var tocToggle = toc.querySelector("h2");
+var tocNav = toc.querySelector("nav");
+
+// mobile menu toggle
+tocToggle.onclick = function(event) {
+    if (window.innerWidth < 1024) {
+ var tocNavDisplay = tocNav.currentStyle ? tocNav.currentStyle.display : getComputedStyle(tocNav, null).display;
+ if (tocNavDisplay == "none") {
+     tocNav.style.display = "block";
+ } else {
+     tocNav.style.display = "none";
+ }
+    }
+}
+
+// toc anchor scroll to anchor
+tocNav.addEventListener("click", function (event) {
+    event.preventDefault();
+    if (event.target.nodeName == 'A') {
+ if (window.innerWidth < 1024) {
+     tocNav.style.display = "none";
+ }
+ var href = event.target.getAttribute("href");
+ var anchorId = href.substr(1);
+ var anchor =  document.getElementById(anchorId);
+ anchor.scrollIntoView(true);
+ window.history.pushState("","",href);
+    }
+});
+
+// switch toc mode when window resized
+window.onresize = function () {
+    if (window.innerWidth < 1024) {
+ tocNav.style.display = "none";
+    } else {
+ tocNav.style.display = "block";
+    }
+}
+</script>
+</body>
+</html>
