@@ -21,8 +21,8 @@ organization = "Sydney Scientific"
 
 {mainmatter}
 
-# Overview
-Modern multi-client software-engineering impedes speedy, quality development as code duplication is required at every tier.
+# Over view
+Moder--n multi-client software-engineering impedes speedy, quality development as code duplication is required at every tier.
 
 Duplication catalyses short-cuts, trade-offs and inconsistencies in order to develop with sufficient agility.
 
@@ -145,7 +145,7 @@ Library SDK for use by Entity specific tests, as well as `import`ed and used by 
 
 Example:
 ```typescript
-public unregister_all(users: User[], callback: TCallback<Error | IncomingMessageError, Response>) {
+public funregister_all(users: User[], callback: TCallback<Error | IncomingMessageError, Response>) {
     mapSeries(users as any, (user: User, callb) =>
         waterfall([
                 call_back => this.login(user, (err, res) =>
