@@ -64,6 +64,8 @@ Depending on the design pattern used, these are sometimes called Controllers or 
 
 ## Compiler
 ### Dynamic code-generation
+The scope and features of dynamic code-generation is still being explored. This section will remain in TODO status until then.
+
 ### Static code-generation
 
 Traverse the Abstract Syntax Tree (AST) using same language as targeting.
@@ -77,10 +79,30 @@ Modify docstring to correctly refer to each function/class (or whatever abstract
 On backend implement `2.3.1.1.6.`, on frontend(s) do similar.
 
 #### Models
-Adding or removing fields in a model MUST result in a change to the [schemas](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject) in [OpenAPI](https://github.com/OAI/OpenAPI-Specification), the schema/validation in the next section, the views, docstrings (if necessary) and the tests (in particular the mocks).
+Adding or removing fields in a model MUST result in a change to the [schemas](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject) in [OpenAPI](https://github.com/OAI/OpenAPI-Specification), the schema/validation in the next section, the views (if frontend), docstrings (if necessary) and the tests (in particular the mocks).
 
 #### Validation
-Changing the validation rules can often be done at the JSON-schema or `2.2.2.3`
+Changing the validation rules can often be done at the JSON-schema or Model (`2.2.2.3`) layer, but sometimes it is done elsewhere, e.g.: email validation that confirms message delivery before allowing insert into model.
+
+We are considering a function name in string syntax here, like:
+
+```python
+class User(Base):
+  __tablename__ = 'users'
+  email = Column(String, primary_key=True) # validation: 'email_validation()'
+  name = Column(String)
+```
+
+Which will tell the compiler where you can find the function, which it will search for in this hierarchy:
+##### Function symbol in file scope
+##### Function symbol in same directory, but in `validators.<ext>` file
+##### If not present, generate new function by this name in `validators.<ext>` file
+This new function should be a boolean or `(err, bool)` or `Result<ErrorCls, bool>` depending on your language/framework's protocol for error propagation. Alternatively if you are implementing it for an already available validation library, then you CAN follow their conventions.
+
+Rather than `throw`ing a `NotImplemented` exception, this function should always suceed. In the middle of the function body SHOULD be a single line comment with:
+```
+# TODO
+```
 
 #### Routes
 #### Views
