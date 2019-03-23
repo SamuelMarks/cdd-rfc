@@ -4,9 +4,7 @@ jobs:
   - stage: redeploy-github-page
     script:
     - make clean html
-    - git clone https://SamuelMarks:$GH_TOKEN@github.com/SamuelMarks/cdd-rfc-web
-      && cd cdd-rfc-web
-    - cp rfc/*.html cdd-rfc-web/
+    - git clone https://SamuelMarks:$GH_TOKEN@github.com/SamuelMarks/cdd-rfc-web ../cdd-rfc-web && cp rfc/*.html "$_" && cd "$_"
     - printf '    %s\t\t%s' "$TRAVIS_REPO_SLUG" "$TRAVIS_COMMIT" >> CHANGESLOG.md
     - git commit -am "[$TRAVIS_REPO_SLUG] $TRAVIS_COMMIT_MESSAGE"
     - git push -u origin master

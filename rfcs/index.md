@@ -8,7 +8,7 @@ keyword = ["compilers"]
 
 [seriesInfo]
 name = "RFC"
-value = "1912839"
+value = "CDDv0.0.1"
 status = "informational"
 
 [[author]]
@@ -21,8 +21,8 @@ organization = "Sydney Scientific"
 
 {mainmatter}
 
-# Over view
-Moder--n multi-client software-engineering impedes speedy, quality development as code duplication is required at every tier.
+# Overview
+Modern multi-client software-engineering impedes speedy, quality development as code duplication is required at every tier.
 
 Duplication catalyses short-cuts, trade-offs and inconsistencies in order to develop with sufficient agility.
 
@@ -30,12 +30,63 @@ To use a web-app example: routes & models of the backend are called from multipl
 
 Our approach supersedes the crux of these trade-offs by: traversing the Abstract Syntax Trees (ASTs) in one language, then transforming and merging schemas across to the next language(s).
 
+This RFC specifies the scope of Compiler Driven Development (CDD).
 
 # Language, framework and design-pattern implementation
-To be compliant with compiler-driven development (CDD), one needs:
+To be compliant with CDD, one needs:
+
 ## Starter scaffold
-The starter scaffold MUST have:
+The starter scaffold MUST have the following:
+
 ### Clear modularisation
+The frontend(s) MUST be separate to the backend(s).
+
+#### Required parts
+##### Validators
+##### Documentation (docstrings)
+##### Tests
+##### Auto-auditors
+Automated systems for showing test & documentation coverage, and with a value of 100.00% for each
+
+#### Frontend
+The API SDK MUST be in a separate folder to the views.
+
+In addition to the 'Required parts' referenced above, frontends MUST have:
+##### Views
+##### API SDK
+
+#### Backend
+There must be a REST (stateless) interface to the API. Additional interfaces—like WebSockets—MAY be provided.
+
+In addition to the 'Required parts' referenced above, backends MUST have:
+##### Routes
+Depending on the design pattern used, these are sometimes called Controllers or Actors. This MUST declare the endpoint—e.g.: `/entity_name/{id}`—and any logic, e.g.: a database query using an ORM. The database query MAY be extracted into a Route SDK, so it can be composed with the Route SDK or directly in the Controllers of other endpoints.
+
+## Compiler
+### Dynamic code-generation
+### Static code-generation
+
+Traverse the Abstract Syntax Tree (AST) using same language as targeting.
+
+Concentrating on finding the difference in the models and routes, deterministically resolve:
+
+#### Docstrings
+Modify docstring to correctly refer to each function/class (or whatever abstraction) paramater.
+
+#### Tests
+On backend implement `2.3.1.1.6.`, on frontend(s) do similar.
+
+#### Models
+Adding or removing fields in a model MUST result in a change to the [schemas](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject) in [OpenAPI](https://github.com/OAI/OpenAPI-Specification), the schema/validation in the next section, the views, docstrings (if necessary) and the tests (in particular the mocks).
+
+#### Validation
+Changing the validation rules can often be done at the JSON-schema or `2.2.2.3`
+
+#### Routes
+#### Views
+
+## Appendix
+### Backend scaffold
 #### Backend example:
 ```
 .
@@ -145,7 +196,7 @@ Library SDK for use by Entity specific tests, as well as `import`ed and used by 
 
 Example:
 ```typescript
-public funregister_all(users: User[], callback: TCallback<Error | IncomingMessageError, Response>) {
+public unregister_all(users: User[], callback: TCallback<Error | IncomingMessageError, Response>) {
     mapSeries(users as any, (user: User, callb) =>
         waterfall([
                 call_back => this.login(user, (err, res) =>
@@ -158,22 +209,8 @@ public funregister_all(users: User[], callback: TCallback<Error | IncomingMessag
         ), callback as any);
 }
 ```
-## Compiler
-### Dynamic code-generation
-### Static code-generation
 
-Traverse the Abstract Syntax Tree (AST) using same language as targetting.
-
-Find the key areas of
-
-#### Docstrings
-#### Tests
-Implement `2.1.1.1.6.`.
-
-#### Models
-
-#### Validation
-#### Routes
-#### Views
+### Frontend scaffold
+To give a frontend example we will use Angular.
 
 {backmatter}
