@@ -22,9 +22,3 @@ To build the RFC HTML files:
 ```bash
 make html
 ```
-
-To parse out just the body and replace the RFC HTML files:
-
-```bash
-make html_body
-```
