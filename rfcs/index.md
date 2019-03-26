@@ -40,8 +40,6 @@ document are to be interpreted as described in BCP 14 [@!RFC2119] [@!RFC8174] wh
 they appear in all capitals, as shown here.
 
 # Language, framework and design-pattern implementation
-[openapi_transpiler_both.png](openapi_transpiler_both.png)
-
 To be compliant with CDD, one needs:
 
 ## Starter scaffold
@@ -67,20 +65,22 @@ In addition to the 'Required parts' referenced above, frontends MUST have:
 ##### Views
 ##### API SDK
 The API SDK is in charge of exposes abstractions to access the endpoints, for example rather than the generic:
-
-     curl --header "Content-Type: application/json" \
-          --request POST \
-          --data '{"username":"xyz","password":"xyz"}' \
-          http://localhost:3000/api/login
+```bash
+curl --header "Content-Type: application/json" \
+    --request POST \
+    --data '{"username":"xyz","password":"xyz"}' \
+    http://localhost:3000/api/login
+```
 
 It should be expose something akin to `login(IUser) (err, string)`, with use like:
-
-    err, token := login(user)
-    if err != nil {
-      // show alert to user with error
-    } else {
-      // redirect to logged-in page or `redirectUri` value
-    }
+```go
+err, token := login(user)
+if err != nil {
+  // show alert to user with error
+} else {
+  // redirect to logged-in page or `redirectUri` value
+}
+```
 
 #### Backend
 There must be a REST (stateless) interface to the API. Additional interfaces—like WebSockets—MAY be provided.
@@ -106,7 +106,7 @@ Concentrating on finding the difference in the models and routes, deterministica
 #### OpenAPI YAML
 At the centre of our model is YAML for OpenAPI. This will be used externally to tell other languages/frameworks the current state of this code-base, and will be used internally to synchronise this code-base.
 
-###### Code-generation directionality decision
+##### Code-generation directionality decision
 For example, if there is a `POST` route for the `User` entity in the OpenAPI but not the code-base, then: iff the OpenAPI file is newer, components related to this new route will be generated, else the OpenAPI file will be updated with the removal of this [old] route.
 
 #### Docstrings
@@ -149,6 +149,111 @@ At some future point algorithms for merging views will be invented, but for now 
 
 ###### Overwrite/insert
 Views should only be inserted. If there are views already, they should be overridden. Keeping with an auto-admin theme, views should be added under the `admin` subdirectory.
+
+## Config file format
+```yaml
+name: cool-project
+version: 0.0.1
+description: wow
+author: me @me
+
+openapi: swagger.yaml
+
+auth: rfc6749
+
+components:
+  todo_list:
+    tests: true
+    routes: false
+    validation: false
+    models: false
+  messaging: true
+  calendar: false
+
+design_pattern:
+ - google-android
+
+language:
+  name: Java
+  version: 7
+framework: Android
+```
+
+The format of the config file is shown here in YAML, but it could just as well be TOML.
+
+## Global config file format
+```yaml
+name: cool-project
+version: 0.0.1
+description: wow
+author: me @me
+
+design_patterns:
+  google-android:
+    - <url>
+languages:
+  - name: Java
+    version: 7
+    url: <url>
+    design_pattern: {"$ref": "#/design_patterns/google-android"}}
+  - name: TypeScript
+```
+
+The format of the config file is shown here in YAML, but it could just as well be TOML. As you can see here, we use [JSON reference](https://tools.ietf.org/id/draft-pbryan-zyp-json-ref-03.html). Also we allow for JSON Pointer [@!RFC6901].
+
+## Interfaces to compiler
+To interact with the compiler, various interfaces need to be created.
+
+It is unclear whether FFI, subprocess, or some kind of client/server relationship will be devised to communicate between the different languages for these interfaces.
+
+### Command-line interface
+`cddctl` is the CLI frontend for CDD. The functionality MUST include as follows, but MAY include more functionality.
+
+Error output is coloured red. When a new file is generated, it is highlighted green and has output like:
+```
+GENERATED <full path>
+```
+When a file is update, it is highlighted purple and has output like:
+```
+UPDATED <full path>
+```
+
+#### `--version`
+Output current version (and possibly versions of language interfaces installed)
+
+#### `--help`
+Output help text, showing all the command line options and their descriptions, as well as a description of `cddctl`.
+
+#### `-v`, `-vv`, `-vvv`
+Control output verbosity level.
+
+#### `-g`, `--global-config`
+When called without parameter—`cddctl --global-config`—will return the global-config location.
+A default one is generated on first run of `cddctl` if not present.
+Explicitly setting one will use the specified config rather than the default one, for this run only, i.e.: it won't replace the default location.
+
+#### `-c`, `--config`
+Config file location. All command-line options (apart from `--help` and `--version`) must be able to be specified in the config file. What's present explicitly in CLI args will take precedence over what's in the config file.
+
+Should use the config file from [3.3.](#section-3.3).
+
+##### `--init`
+Generate a new config file. Inferring from the OpenAPI file what `components` there are, and sets them all to `true`. If it can't find an OpenAPI file under one of the default names, an error is thrown.
+
+The user is then prompted to set the `framework`, and the `language` attributes of: `name` and `version`.
+
+### IDE integration
+
+#### Language server (LSP)
+JSON-RPC interface following a well-defined standard. Supports Vim, Microsoft Visual Studio Code and Emacs.
+
+Should use the config file from [3.3.](#section-3.3).
+
+#### JetBrains
+(try with [this plugin](https://plugins.jetbrains.com/plugin/10209-lsp-support) for LSP support, otherwise write vanilla plugin)
+
+#### Microsoft Visual Studio
+(looks like LSP has been [integrated into MSVC](https://marketplace.visualstudio.com/items?itemName=vsext.LanguageServerClientPreview))
 
 ## Appendix
 ### Backend scaffold
@@ -364,7 +469,204 @@ To give a frontend example we will use Angular (TypeScript & HTML).
 `-- tslint.json
 ```
 
-# Done
-End
+### Translation/compilation examples
+
+### Route to OpenAPI (symmetrical)
+With filename: `api/user/routes.ts`:
+```typescript
+export const read = (app: restify.Server, namespace: string = '') =>
+    app.get(namespace, has_auth(),
+        (req: UserBodyUserReq, res: restsify.Response, next: restify.Next) =>
+            user_sdk.get(req, (err, user: User) => {
+                if (err != null) return next(err);
+                res.json(user);
+                return next();
+            })
+    );
+```
+
+Will generate:
+
+```yaml
+paths:
+    /user:
+        get:
+            summary: Retrieve user data
+            parameters:
+                - name: X-Access-Token
+                  in: header
+                  description: Valid Access Token from which user can be found at
+                  required: true
+                  type: string
+                    #$ref: '#/definitions/AccessToken'
+            responses:
+                200:
+                    description: User associated with that access token
+                    schema:
+                        $ref: '#/definitions/User'
+                default:
+                    description: Unexpected error
+                    schema:
+                        $ref: '#/definitions/Error'
+```
+
+### Model to OpenAPI
+
+#### Model
+With filename: `api/user/models.ts`:
+```typescript
+@Entity('user_tbl')
+export class User {
+    public static _omit: string[] = ['password'];
+    @PrimaryColumn({ type: 'varchar' })
+    public email: string;
+    @Column('varchar', { nullable: true, select: false })
+    public password: string;
+    @Column('varchar', { nullable: true })
+    public title?: string;
+    @CreateDateColumn()
+    public createdAt?: Date;
+    @UpdateDateColumn()
+    public updatedAt?: Date;
+    @Column('simple-array', { nullable: false })
+    public roles: string[];
+
+    // All the following is added by the developer, and will not show up in OpenAPI
+
+    // Might get attached for tests or in middleware; NOT present in db
+    public access_token?: string;
+
+    public static rolesAsStr = (roles: string[]): string => roles && roles.length ?
+        roles.filter(role => role && role.length).join('::') : '';
+
+    @BeforeUpdate()
+    @BeforeInsert()
+    public async hashPassword?() {
+        this.password = this.password.startsWith('$argon2') ? this.password
+            : await argon2.hash(this.password, argon2_options);
+    }
+
+    @BeforeUpdate()
+    @BeforeInsert()
+    public setRoles?() {
+        if (this.roles == null || !this.roles.length)
+            this.roles = ['registered', 'login'];
+    }
+}
+```
+
+Will generate (with reference to [@RFC6749]):
+
+#### Models
+
+```yaml
+components:
+  schemas:
+    User:
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        title:
+          type: string
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+    Error: # this is the default Error schema, TODO: make this RFC6749 compliant
+      required:
+        - code
+        - error
+        - error_message
+      properties:
+        code:
+          type: integer
+          format: int32
+        error:
+          type: string
+        error_message:
+          type: string
+```
+
+### OpenAPI to Model
+With [Models](#name-models-2) from above, the following will:
+
+#### Clean generate (not updating)
+With filename: `api/user/models.ts`:
+```typescript
+@Entity('user_tbl')
+export class User {
+    @PrimaryColumn({ type: 'varchar' })
+    public email: string;
+    @Column('varchar', { nullable: true, select: false })
+    public password: string;
+    @Column('varchar', { nullable: true })
+    public title?: string;
+    @CreateDateColumn()
+    public createdAt?: Date;
+    @UpdateDateColumn()
+    public updatedAt?: Date;
+    @Column('simple-array', { nullable: false })
+    public roles: string[];
+}
+```
+
+#### Update
+For this example, let's add a new field at `components.schemas.User.properties`:
+```yaml
+location:
+  type: string
+```
+
+Now this will update `api/user/models.ts` from [above](#name-model) into:
+```typescript
+@Entity('user_tbl')
+export class User {
+    public static _omit: string[] = ['password'];
+    @PrimaryColumn({ type: 'varchar' })
+    public email: string;
+    @Column('varchar', { nullable: true, select: false })
+    public password: string;
+    @Column('varchar', { nullable: true })
+    public title?: string;
+    @CreateDateColumn()
+    public createdAt?: Date;
+    @UpdateDateColumn()
+    public updatedAt?: Date;
+    @Column('simple-array', { nullable: false })
+    public roles: string[];
+    @Column('varchar', { nullable: true })
+    public location?: string;
+
+    // All the following is added by the developer, and will not show up in OpenAPI
+
+    // Might get attached for tests or in middleware; NOT present in db
+    public access_token?: string;
+
+    public static rolesAsStr = (roles: string[]): string => roles && roles.length ?
+        roles.filter(role => role && role.length).join('::') : '';
+
+    @BeforeUpdate()
+    @BeforeInsert()
+    public async hashPassword?() {
+        this.password = this.password.startsWith('$argon2') ? this.password
+            : await argon2.hash(this.password, argon2_options);
+    }
+
+    @BeforeUpdate()
+    @BeforeInsert()
+    public setRoles?() {
+        if (this.roles == null || !this.roles.length)
+            this.roles = ['registered', 'login'];
+    }
+}
+```
+
+##### Deciding where to insert new field
+It will always append to the bottom of the last known part of the abstraction, in this `class` the compiler won't understand andthing after the `roles` column, so will append anything between the last thing it knows and everything else (+ a new line).
 
 {backmatter}
