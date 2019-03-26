@@ -113,13 +113,13 @@ For example, if there is a `POST` route for the `User` entity in the OpenAPI but
 Modify docstring to correctly refer to each function/class (or whatever abstraction) parameter.
 
 #### Tests
-On backend(s) implement [3.3.1.1.6](#section-3.3.1.1.6)., on frontend(s) do similar.
+On backend(s) implement [3.6.1.1.6](#section-3.6.1.1.6)., on frontend(s) do similar.
 
 #### Models
 Adding or removing fields in a model MUST result in a change to the [schemas](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject) in [OpenAPI](https://github.com/OAI/OpenAPI-Specification), the schema/validation in the next section, the views (if frontend), docstrings (if necessary) and the tests (in particular the mocks).
 
 #### Validation
-Changing the validation rules can often be done at the JSON-schema or Model [3.2.2.3](#section-3.2.2.3) layer, but sometimes it is done elsewhere, e.g.: email validation that confirms message delivery before allowing insert into model.
+Changing the validation rules can often be done at the JSON-schema or Model [3.6.6.1.](#section-3.6.6.1.) layer, but sometimes it is done elsewhere, e.g.: email validation that confirms message delivery before allowing insert into model.
 
 We are considering a function name in string syntax here, like:
 
