@@ -253,7 +253,7 @@ Should use the config file from [3.3.](#section-3.3).
 (try with [this plugin](https://plugins.jetbrains.com/plugin/10209-lsp-support) for LSP support, otherwise write vanilla plugin)
 
 #### Microsoft Visual Studio
-(looks like LSP has been [integrated into MSVC](https://marketplace.visualstudio.com/items?itemName=vsext.LanguageServerClientPreview))
+(looks like LSP has been [integrated into MSVC](https://devblogs.microsoft.com/visualstudio/announcing-language-server-protocol-preview-release))
 
 ## Appendix
 ### Backend scaffold
